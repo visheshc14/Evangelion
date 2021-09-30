@@ -16,7 +16,7 @@ import passportLocalMongoose from 'passport-local-mongoose';
 import connectEnsureLogin from 'connect-ensure-login';
 
 const app = express();
-const port = 4567;
+const port = 4000;
 
 app.use(express.static(__dirname))
 

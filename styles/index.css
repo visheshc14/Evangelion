@@ -1,94 +1,94 @@
 body {
-    overflow-y: hidden;
-    -ms-overflow-style: none;
+  overflow-y: hidden;
+  -ms-overflow-style: none;
 }
 body ::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 .chat-room {
-    height: 100vh;
+  height: 100vh;
 }
 .chat-room #messages {
-    height: 100%;
-    overflow-y: scroll;
-    padding-bottom: 200px;
-    padding-top: 20px;
+  height: 100%;
+  overflow-y: scroll;
+  padding-bottom: 200px;
+  padding-top: 20px;
 }
 .chat-room .navbar {
-    border-bottom: 1px solid #eee;
-    margin-left: -15px;
-    width: calc(100% + 30px);
+  border-bottom: 1px solid #eee;
+  margin-left: -15px;
+  width: calc(100% + 30px);
 }
 .chat-room .message {
-    min-height: 59px;
+  min-height: 59px;
 }
 .chat-room .message .content-container {
-    display: inline-block;
+  display: inline-block;
 }
 .chat-room .message .content-container .content {
-    background-color: #eee;
-    padding: 8px 16px;
-    border-radius: 20px;
+  background-color: #eee;
+  padding: 8px 16px;
+  border-radius: 20px;
 }
 .chat-room .message .content-container .author {
-    font-size: 0.8rem;
-    color: #777;
-    margin-left: 10px;
+  font-size: 0.8rem;
+  color: #777;
+  margin-left: 10px;
 }
 .chat-room .message.me .content-container {
-    float: right;
+  float: right;
 }
 .chat-room .message.me .content-container .content {
-    background-color: #007bff;
-    color: white;
+  background-color: #007bff;
+  color: white;
 }
 .chat-room .chat-box {
-    position: absolute;
-    bottom: -10px;
-    padding: 20px;
-    width: 100%;
-    margin-left: -15px;
-    background-color: white;
-    border-top: 1px solid #eee;
+  position: absolute;
+  bottom: -10px;
+  padding: 20px;
+  width: 100%;
+  margin-left: -15px;
+  background-color: white;
+  border-top: 1px solid #eee;
 }
 .chat-room .chat-box input[type=text] {
-    height: 45px;
-    font-size: 18px;
-    padding: 8px;
+  height: 45px;
+  font-size: 18px;
+  padding: 8px;
 }
 .chat-room .chat-box .btn {
-    height: 45px;
+  height: 45px;
 }
 .card.no-outline {
-    border: none;
+  border: none;
 }
 .room-link:hover {
-    text-decoration: none;
+  text-decoration: none;
 }
 .room-link .room-card {
-    transition: background-color 0.5s ease;
-    border-radius: 20px;
+  transition: background-color 0.5s ease;
+  border-radius: 20px;
 }
 .room-link .room-card:hover {
-    background-color: #eee;
+  background-color: #eee;
 }
 .room-link .room-card.active {
-    background-color: black;
+  background-color: black;
 }
 .room-link .room-card.active .name {
-    color: white;
+  color: white;
 }
 .room-link .room-card.active .member-count {
-    color: #e0e0e0;
+  color: #e0e0e0;
 }
 .room-link .room-card .name {
-    font-weight: bold;
-    color: black;
+  font-weight: bold;
+  color: black;
 }
 .room-link .room-card .member-count {
-    color: #777;
-    font-weight: light;
+  color: #777;
+  font-weight: light;
 }
 .rooms-sidebar {
-    border-right: 1px solid #eee;
+  border-right: 1px solid #eee;
 }
