@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Index</title>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"
         integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
@@ -22,6 +22,7 @@
 
 <body>
     <div id='current-user' data-address="<%= user.address %>"></div>
+    <div id='current-room' data-room="<%= room %>"></div>
     <div class="container-fluid">
         <div class="row">
             <div class="col-3 rooms-sidebar">
@@ -35,47 +36,80 @@
                 </div>
                 <hr>
                 <hr>
-                <a href="#" class="room-link">
-                    <div class="card no-outline mb-2 room-card active">
+                <a href="/rooms/hall" class="room-link">
+                    <div class="card no-outline mb-2 room-card <%= room == 'hall' ? 'active' : '' %>">
                         <div class="card-body">
                             <span class='name'>
-                                Main Chat
+                                ROOM: hall
                             </span><br>
                             <span class='member-count'>
                                 <small>
-                                    99 Members
+                                    24 Members
                                 </small>
                             </span>
                         </div>
                     </div>
                 </a>
 
-
-                <div class="card no-outline mb-2 room-card">
-                    <div class="card-body">
-                        <span class='name'>
-                            Aleph
-                        </span><br>
-                        <span class='member-count'>
-                            <small>
-                                99 Members
-                            </small>
-                        </span>
+                <a href="/rooms/troll" class="room-link">
+                    <div class="card no-outline mb-2 room-card <%= room == 'troll' ? 'active' : '' %>">
+                        <div class="card-body">
+                            <span class='name'>
+                                ROOM: troll
+                            </span><br>
+                            <span class='member-count'>
+                                <small>
+                                    59 Members
+                                </small>
+                            </span>
+                        </div>
                     </div>
-                </div>
+                </a>
 
-                <div class="card no-outline mb-2 room-card">
-                    <div class="card-body">
-                        <span class='name'>
-                            Node JS
-                        </span><br>
-                        <span class='member-count'>
-                            <small>
-                                49 Members
-                            </small>
-                        </span>
+                <a href="/rooms/techies" class="room-link">
+                    <div class="card no-outline mb-2 room-card <%= room == 'techies' ? 'active' : '' %>">
+                        <div class="card-body">
+                            <span class='name'>
+                                ROOM: techies
+                            </span><br>
+                            <span class='member-count'>
+                                <small>
+                                    91 Members
+                                </small>
+                            </span>
+                        </div>
                     </div>
-                </div>
+                </a>
+
+                <a href="/rooms/private" class="room-link">
+                    <div class="card no-outline mb-2 room-card <%= room == 'private' ? 'active' : '' %>">
+                        <div class="card-body">
+                            <span class='name'>
+                                ROOM: private
+                            </span><br>
+                            <span class='member-count'>
+                                <small>
+                                    91 Members
+                                </small>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="/rooms/vit" class="room-link">
+                    <div class="card no-outline mb-2 room-card <%= room == 'vit' ? 'active' : '' %>">
+                        <div class="card-body">
+                            <span class='name'>
+                                ROOM: vit
+                            </span><br>
+                            <span class='member-count'>
+                                <small>
+                                    91 Members
+                                </small>
+                            </span>
+                        </div>
+                    </div>
+                </a>
 
             </div>
             <div class="col-9">
@@ -87,7 +121,7 @@
                             </b>
                         </span>
                         <small>
-                            99 Members
+                            39 Members
                         </small>
                     </nav>
                     <div id="messages">
@@ -107,7 +141,7 @@
                                 <% }) %>
                     </div>
                     <div class="chat-box">
-                        <form action="/messages" method="post" id='message-form'>
+                        <form action="/messages/<%= room %>" method="post" id='message-form'>
                             <div class="input-group">
                                 <input type='text' name="message" id="message" cols="30" rows="10" class="form-control">
                                 <div class="input-group-append"></div>
@@ -125,7 +159,7 @@
         $(document).ready(() => {
 
             function appendMessage(message) {
-                if (isNotOnPage(message) && isChatMessage(message)) {
+                if (isNotOnPage(message) && isForChannel(message) && isChatMessage(message)) {
                     var user_address = $('#current-user').data('address')
                     var template = '<div class="message mb-2 ' + (user_address == message.content.address ? "me" : "") + '"> \
                         <div class="content-container"> \
@@ -134,11 +168,15 @@
                         </div> \
                     </div>'
                     $('#messages').append(template)
-                } 
+                }
             }
 
             function isNotOnPage(message) {
-                return !$(`#message-${message._id}`)[0] == undefined
+                return $(`#message-${message._id}`)[0] == undefined
+            }
+
+            function isForChannel(message) {
+                return $('#current-room').data('room') == message.content.ref
             }
 
             function isChatMessage(message) {
@@ -153,7 +191,7 @@
             }
             $('#message-form').submit((e) => {
                 e.preventDefault();
-                $.post('/messages', $('#message-form').serialize())
+                $.post('/messages/<%= room %>', $('#message-form').serialize())
                 $('#message-form input[type=text]').val('')
             })
         })
@@ -161,5 +199,3 @@
 </body>
 
 </html>
-
-<!-- 'me' if message.user == current_user -->
