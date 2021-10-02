@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon ./index.js --exec babel-node -e js",
-    "build:css": "postcss styles/tailwind.css -o styles/login.css"
+    "build:css": "postcss styles/tailwind.css -o styles/login.css && npx tailwindcss build styles/register.css"
   },
   "keywords": [],
   "author": "",
