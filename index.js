@@ -1,4 +1,3 @@
-// e
 import express, { request } from 'express';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
@@ -13,9 +12,10 @@ const expressSession = require('express-session')({
 import passport from 'passport';
 import passportLocalMongoose from 'passport-local-mongoose';
 import connectEnsureLogin from 'connect-ensure-login';
+import { data } from 'autoprefixer';
 
 const app = express();
-const port = 4567;
+const port = 8000;
 
 app.use(express.static(__dirname))
 
@@ -59,7 +59,7 @@ app.get('/', connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     var network_id = 261
     var channel = 'TEST'
 
-    let memberships = await aleph.posts.get_posts('channel_memberships', { 'addresses': [req.user.address], 'api_server': 
+    let memberships = await aleph.posts.get_posts('vit.channel_memberships', { 'addresses': [req.user.address], 'api_server':
     api_server })
 
     let channel_refs = memberships.posts.map((membership) => {
@@ -70,12 +70,12 @@ app.get('/', connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
 
     channel_refs = channel_refs.filter(ref => ref != undefined)
 
-    let channels = await aleph.posts.get_posts('channels', { 'hashes': channel_refs, 'api_server': api_server })
-     
-    res.render('index', { 
+    let channels = await aleph.posts.get_posts('vit.channels', { 'hashes': channel_refs, 'api_server': api_server })
+
+    res.render('index', {
         channels: channels.posts,
-        user: req.user, 
-        room: room 
+        user: req.user,
+        room: room
     })
 })
 
@@ -88,45 +88,62 @@ app.get('/channels', connectEnsureLogin.ensureLoggedIn(), async (req, res) => { 
     var api_server = 'https://api2.aleph.im'
     var network_id = 261
     var channel = 'TEST'
-    
-    let channels = await aleph.posts.get_posts('channels', { 'api_server': api_server })
-    
-    res.render('channels/index', { 
+
+    let channels = await aleph.posts.get_posts('vit.channels', { 'api_server': api_server })
+
+    res.render('channels/index', {
         channels: channels.posts
     })
 })
 
 app.get('/channels/:item_hash/join', connectEnsureLogin.ensureLoggedIn(), (req, res) => {
-    let room = req.params.room
     var api_server = 'https://api2.aleph.im'
     var network_id = 261
     var channel = 'TEST'
 
     aleph.ethereum.import_account({ mnemonics: req.user.mnemonics }).then(async (account) => {
 
-    await aleph.posts.submit(account.address, 'channel_memberships', {}, {
-        ref: req.params.item_hash,
-        api_server: api_server,
-        account: account,
-        channel: channel
-    })
+        let result = await aleph.posts.get_posts('vit.channels', { 'api_server': api_server, hashes: [req.params.item_hash] })
 
-    res.redirect(`/rooms/${req.params.item_hash}`)
-  })
+        let post = result.posts[0]
+        if (post) {
+            let data;
+            let post_content = JSON.parse(post.item_content) 
+            if (post_content.content.type == 'private') {   
+                data = { status: 'pending' }
+            } else {
+                data = { status: 'active' }
+            }
+            await aleph.posts.submit(account.address, 'vit.channel_memberships', data, {
+                ref: req.params.item_hash,
+                api_server: api_server,
+                account: account,
+                channel: channel
+            })
+            res.redirect(`/rooms/${req.params.item_hash}`)
+        } else {
+            // handle the error condition
+        }
+    })
 })
 
 app.post("/channels", connectEnsureLogin.ensureLoggedIn(), (req, res) => {
 
     var channel_name = req.body.name
-    console.log(channel_name)
+    var channel_type = req.body.type
 
     aleph.ethereum.import_account({ mnemonics: req.user.mnemonics }).then(async (account) => {
-        let room = req.params.room
         var api_server = 'https://api2.aleph.im'
         var network_id = 261
         var channel = 'VIT_CHAT'
+        
+        let data = {
+            'body': channel_name,
+            'type': channel_type,
+            'approved_addresses': [account.address]
+        }
 
-        let response = await aleph.posts.submit(account.address, 'channels', { 'body': channel_name }, {
+        let response = await aleph.posts.submit(account.address, 'vit.channels', data,{
             api_server: api_server,
             account: account,
             channel: channel
@@ -144,14 +161,72 @@ app.post("/channels", connectEnsureLogin.ensureLoggedIn(), (req, res) => {
     })
 })
 
+app.get("/channels/:channel_hash/approve/:user_address", connectEnsureLogin.ensureLoggedIn(), (req, res) => {
+
+    var channel_hash = req.params.channel_hash
+    var user_address = req.params.user_address
+
+    aleph.ethereum.import_account({ mnemonics: req.user.mnemonics }).then(async (account) => {
+        var api_server = 'https://api2.aleph.im'
+        var network_id = 261
+        var channel = 'VIT_CHAT'
+
+        let result = await aleph.posts.get_posts('vit.channels', { hashes: [channel_hash] })
+        let channel_record = result.posts[0]
+
+        let data = channel_record.content
+        data.approved_addresses.push(user_address)
+
+        let response = await aleph.posts.submit(account.address, 'amend', data,{
+            api_server: api_server,
+            account: account,
+            channel: channel,
+            ref: channel_hash
+        })
+
+        result = await aleph.posts.get_posts('vit.channels', { hashes: [channel_hash] })
+        channel_record = result.posts[0]
+
+        console.log(channel_record)
+
+        // await aleph.posts.submit(account.address, 'channel_memberships', {}, {
+        //     ref: response.item_hash,
+        //     api_server: api_server,
+        //     account: account,
+        //     channel: channel
+        // })
+
+        // console.log(response)
+        // res.redirect("/")
+    })
+})
+
+app.get('/rooms/:room/members', connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
+    let room = req.params.room
+    var api_server = 'https://api2.aleph.im'
+    var network_id = 261
+
+    // let channel = await aleph.posts.get_posts('vit.channels', { 'hashes': [room], 'api_server': api_server })
+    
+    let memberships = await aleph.posts.get_posts('vit.channel_memberships', { 'refs': [room], 'api_server':
+    api_server })
+
+    res.render('members/index', {
+        user: req.user,
+        memberships: memberships.posts,
+        room: room
+    })
+})
+
+
 app.get('/rooms/:room', connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     let room = req.params.room
     var api_server = 'https://api2.aleph.im'
     var network_id = 261
     var channel = 'TEST'
+ 
 
-
-    let memberships = await aleph.posts.get_posts('channel_memberships', { 'addresses': [req.user.address], 'api_server': 
+    let memberships = await aleph.posts.get_posts('vit.channel_memberships', { 'addresses': [req.user.address], 'api_server':
     api_server })
 
     let channel_refs = memberships.posts.map((membership) => {
@@ -160,17 +235,31 @@ app.get('/rooms/:room', connectEnsureLogin.ensureLoggedIn(), async (req, res) =>
         }
     })
 
+    console.log(channel_refs)
+
+    let result = await aleph.posts.get_posts('vit.channels', { 'api_server': api_server, hashes: [room] })
+
+    console.log(result)
+
+    let post = result.posts[0]
+    let post_content = JSON.parse(post.item_content) 
+    let channel_details = post_content.content 
+
+    console.log(channel_details)
+
+
     channel_refs = channel_refs.filter(ref => ref != undefined)
 
-    let channels = await aleph.posts.get_posts('channels', { 'hashes': channel_refs, 'api_server': api_server })
+    let channels = await aleph.posts.get_posts('vit.channels', { 'hashes': channel_refs, 'api_server': api_server })
 
-    let result = await aleph.posts.get_posts('messages', { 'refs': [room], 'api_server': api_server })
-    
-    res.render('index', { 
+    result = await aleph.posts.get_posts('vit.messages', { 'refs': [room], 'api_server': api_server })
+
+    res.render('channels/show', {
         channels: channels.posts,
-        posts: result.posts, 
-        user: req.user, 
-        room: room
+        posts: result.posts,
+        user: req.user,
+        room: room,
+        channel_details: channel_details
     })
 })
 
@@ -206,14 +295,14 @@ app.post("/messages/:room", connectEnsureLogin.ensureLoggedIn(), (req, res) => {
 
     var message = req.body.message
     const room = req.params.room
-
+    
     aleph.ethereum.import_account({ mnemonics: req.user.mnemonics }).then((account) => {
         let room = req.params.room
         var api_server = 'https://api2.aleph.im'
         var network_id = 261
         var channel = 'TEST'
 
-        aleph.posts.submit(account.address, 'messages', { 'body': message }, {
+        aleph.posts.submit(account.address, 'vit.messages', { 'body': message }, {
             ref: room,
             api_server: api_server,
             account: account,

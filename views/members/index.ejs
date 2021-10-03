@@ -22,27 +22,32 @@
 
     <body>
         <div class="container">
-            <h3 class="mt-5">Join a channel</h3>
-            <% channels.forEach((channel)=> { %>
-                <% parsed_item = JSON.parse(channel.item_content) %>
+            <h3 class="mt-5">Channel Members</h3>
+            <table class="table">
+                <tr>
+                    <th>Address</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            <% memberships.forEach((membership) => { %>
+                <% let membership_data = JSON.parse(membership.item_content) %>
+                <tr>
+                    <td><%= membership_data.address %></td>
+                    <% if (membership_data.address == user.address) { %>
+                        <td>Moderator</td>
+                    <% } else { %>
+                        <td><%= membership_data.content.status %></td>
+                    <% } %>
+                    <% if (membership_data.content.status == 'pending') { %>
+                        <td><a href="/channels/<%= room %>/approve/<%= membership_data.address %>" class="btn btn-primary btn-sm">Approve</a></td>
+                    <% } else { %>
+                        <td></td>
+                    <% } %>
+                </tr>
                 
-                <div class="card mb-3">
-                    <div class="card-body">
-                             <div class="row">
-                            <div class="col-8">
-                                <%= parsed_item.content.body %>
-                            </div>
-                            <div class="col-4">
-                                <% if (parsed_item.content.type == 'private') { %>
-                                    <a href="/channels/<%= channel.item_hash %>/join" class="btn btn-primary">Request Access</a>
-                                <% } else { %>
-                                    <a href="/channels/<%= channel.item_hash %>/join" class="btn btn-primary">Join</a>
-                                <% } %>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             <% }) %>
-        </div>
+            </table>                                       
+        </div>      
     </body>
 </html>
+ 
