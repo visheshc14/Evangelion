@@ -15,7 +15,7 @@ import connectEnsureLogin from 'connect-ensure-login';
 import { data } from 'autoprefixer';
 
 const app = express();
-const port = 1334;
+const port = 8000;
 
 app.use(express.static(__dirname))
 
